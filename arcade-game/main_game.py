@@ -4,7 +4,7 @@ import random
 import arcade.gui
 from arcade.camera import Camera2D
 import sqlite3
-
+# https://77.110.116.116:29254/cCjgKdsprM6geoQvp3/panel/
 # --- ГЛОБАЛЬНЫЕ НАСТРОЙКИ ИГРЫ ---
 SCREEN_WIDTH = 1920
 SCREEN_HEIGHT = 1080

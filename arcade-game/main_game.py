@@ -4,6 +4,9 @@ import random
 import arcade.gui
 from arcade.camera import Camera2D
 import sqlite3
+from stats_sender import StatsSender
+
+
 # https://77.110.116.116:29254/cCjgKdsprM6geoQvp3/panel/
 # --- ГЛОБАЛЬНЫЕ НАСТРОЙКИ ИГРЫ ---
 SCREEN_WIDTH = 1920
@@ -522,6 +525,7 @@ class GameView(arcade.View):
     def __init__(self, username):
         """ Базовая инициализация и создание камер. """
         super().__init__()
+        self.stats_api = StatsSender()
         self.world_camera = Camera2D()  # Камера, которая следует за игроком
         self.gui_camera = Camera2D()  # Статичная камера для интерфейса (HP, таймер)
         self.username = username
@@ -969,6 +973,7 @@ class GameView(arcade.View):
 
         # Проверка смерти игрока
         if self.player.hp <= 0:
+
             if not self.death_sound_played:
                 arcade.play_sound(self.sounds["death"])
                 self.death_sound_played = True

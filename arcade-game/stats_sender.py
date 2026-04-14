@@ -1,17 +1,11 @@
 import requests
 
+
 class StatsSender:
     def __init__(self, server_url="http://127.0.0.1:8080"):
         self.url = server_url
 
-    def send(self, username, kills, deaths, bosses_defeated, score):
-        data = {
-            "username": username,
-            "kills": kills,
-            "deaths": deaths,
-            "bosses_defeated": bosses_defeated,
-            "score": score
-        }
+    def send(self, data: dict):
         response = requests.post(f"{self.url}/api/update-stats", json=data)
         if response.status_code == 200:
             result = response.json()

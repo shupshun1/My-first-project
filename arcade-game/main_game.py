@@ -978,17 +978,19 @@ class GameView(arcade.View):
                 arcade.play_sound(self.sounds["death"])
                 self.death_sound_played = True
                 game_stats = {
-                    'name': self.username,
-                    'time': self.timer,
-                    'waves': self.current_wave,
-                    'enemies': self.enemies_killed,
-                    'bats': self.bats_killed,
-                    'bosses': self.bosses_killed,
-                    'thrown': self.swords_thrown,
-                    'hitted': self.swords_hitted,
-                    'missed': self.swords_missed
+                    'username': self.username,
+                    'total_wave': self.current_wave,
+                    'deaths': 1,
+                    'kills': self.enemies_killed + self.bats_killed + self.bosses_killed,
+                    'bats_killed': self.bats_killed,
+                    'enemies_killed': self.enemies_killed,
+                    'bosses_defeated': self.bosses_killed,
+                    'swords_thrown': self.swords_thrown,
+                    'swords_hitted': self.swords_hitted,
+                    'swords_missed': self.swords_missed
                 }
-                self.db.save_result(game_stats)
+                self.stats_api.send(game_stats)
+                # self.db.save_result(game_stats)
 
             self.player.remove_from_sprite_lists()
             self.spawn_particles(self.player.center_x, self.player.center_y, arcade.color.RED_DEVIL, count=40)

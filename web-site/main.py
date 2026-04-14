@@ -101,18 +101,27 @@ def update_stats():
     user.update_stats(
         kills=data.get("kills", 0),
         deaths=data.get('deaths', 0),
-        bosses=data.get('bosses_defeated', 0),
-        score=data.get('score', 0)
+        bosses_defeated=data.get('bosses_defeated', 0),
+        swords_hitted=data.get('swords_hitted', 0),
+        swords_thrown=data.get('swords_thrown', 0),
+        swords_missed=data.get('swords_missed', 0),
+        total_wave=data.get('total_wave', 0),
+        enemies_killed=data.get('enemies_killed', 0),
+        bats_killed=data.get('bats_killed', 0),
     )
     db_sess.commit()
     return jsonify({
         'status': 'ok',
         'message': 'Stats updated',
-        'new_level': user.level,
-        'total_score': user.total_score,
         'kills': user.kills,
         'deaths': user.deaths,
-        'bosses_defeated': user.bosses_defeated
+        'bosses_defeated': user.bosses_defeated,
+        'swords_hitted': user.swords_hitted,
+        'swords_thrown': user.swords_thrown,
+        'swords_missed': user.swords_missed,
+        'enemies_killed': user.enemies_killed,
+        'total_wave': user.total_wave,
+        'bats_killed': user.bats_killed
     })
 
 @app.route("/api/user/<username>", methods=['GET'])
@@ -123,11 +132,14 @@ def get_user_stats(username):
         return jsonify({"error": "User not found"}), 404
     return jsonify({
         'username': user.username,
-        'level': user.level,
         'kills': user.kills,
         'deaths': user.deaths,
         'bosses_defeated': user.bosses_defeated,
-        'total_score': user.total_score
+        'swords_hitted': user.swords_hitted,
+        'swords_thrown': user.swords_thrown,
+        'swords_missed': user.swords_missed,
+        'enemies_killed': user.enemies_killed,
+        'bats_killed': user.bats_killed
     })
 
 

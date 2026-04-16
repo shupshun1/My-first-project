@@ -5,6 +5,7 @@ import arcade.gui
 from arcade.camera import Camera2D
 import sqlite3
 from stats_sender import StatsSender
+import requests
 
 
 # https://77.110.116.116:29254/cCjgKdsprM6geoQvp3/panel/
@@ -1364,27 +1365,6 @@ class MenuView(arcade.View):
             text_color=arcade.color.GOLD
         )
         self.v_box.add(self.label)
-
-        # Поле ввода никнейма
-        self.name_input = arcade.gui.UIInputText(
-            text='Введите никнейм',
-            width=400,
-            height=50,
-            font_size=20,
-            font_name="Kenney Future",
-            text_color=arcade.color.BLACK,
-            text_align="center"
-        )
-
-        # Стиль поля ввода (скрываем стандартные рамки, используем свой патч)
-        self.name_input.style = {
-            "normal": {"bg_color": (0, 0, 0, 0), "border_width": 0, "font_color": arcade.color.BLACK},
-            "focused": {"bg_color": (0, 0, 0, 0), "border_width": 0, "font_color": arcade.color.BLACK}
-        }
-
-        input_bg = self.name_input.with_background(texture=patch).with_padding(top=10, left=10)
-        self.v_box.add(input_bg.with_border(width=0))
-
         # Кнопка старта
         self.start_button = arcade.gui.UITextureButton(
             text="Начать игру",
@@ -1395,6 +1375,17 @@ class MenuView(arcade.View):
             style=button_style
         )
         self.v_box.add(self.start_button)
+
+        login_button = arcade.gui.UITextureButton(
+            text="Войти / Регистрация",
+            texture=patch,
+            texture_hovered=patch,
+            width=300,
+            height=60,
+            style=button_style
+        )
+        login_button.on_click = self.on_click_login
+        self.v_box.add(login_button)
 
         # Кнопка таблицы лидеров
         self.leader_button = arcade.gui.UITextureButton(
@@ -1428,6 +1419,12 @@ class MenuView(arcade.View):
             self.music_now = None
         self.window.show_view(Leaderboard())
 
+    def on_click_login(self, event):
+        if self.music_now:
+            arcade.stop_sound(self.music_now)
+            self.music_now = None
+        self.window.show_view(LoginView())
+
     def on_click_start(self, event):
         """ Логика проверки никнейма и запуска основной игры. """
         # Получаем текст и убираем лишние пробелы
@@ -1459,6 +1456,310 @@ class MenuView(arcade.View):
             self.window.width / 2, self.window.height / 2, SCREEN_WIDTH, SCREEN_HEIGHT * 1.5))
         self.manager.draw()
 
+
+class LoginView(arcade.View):
+    def __init__(self):
+        super().__init__()
+        arcade.load_font("Kenney Future.ttf")
+        self.music = arcade.load_sound("menu_music.mp3")
+        self.music_now = None
+        self.background = arcade.load_texture("fon.png")
+        self.manager = arcade.gui.UIManager()
+        self.anchor_layout = arcade.gui.UIAnchorLayout()
+        texture = arcade.load_texture("menuknopka.png")
+        patch = arcade.gui.NinePatchTexture(
+            texture=texture,
+            left=12, right=12, bottom=12, top=12,
+        )
+        button_style = {
+            "normal": {
+                "font_name": "Kenney Future",
+                "font_size": 15,
+                "font_color": arcade.color.DARK_BLUE_GRAY
+            },
+            "hover": {
+                "font_name": "Kenney Future",
+                "font_size": 15,
+                "font_color": arcade.color.BLACK
+            },
+            "press": {
+                "font_name": "Kenney Future",
+                "font_size": 15,
+                "font_color": arcade.color.WHITE
+            }
+        }
+        self.v_box = arcade.gui.UIBoxLayout(space_between=20)
+        title = arcade.gui.UILabel(
+            text="ВХОД В АККАУНТ",
+            font_size=45,
+            font_name="Kenney Future",
+            text_color=arcade.color.GOLD
+        )
+        self.v_box.add(title)
+        self.username_input = arcade.gui.UIInputText(
+            text='Логин',
+            width=400,
+            height=50,
+            font_size=20,
+            font_name="Kenney Future",
+            text_color=arcade.color.BLACK,
+            text_align="center"
+        )
+        self.username_input.style = {
+            "normal": {"bg_color": (0, 0, 0, 0), "border_width": 0, "font_color": arcade.color.BLACK},
+            "focused": {"bg_color": (0, 0, 0, 0), "border_width": 0, "font_color": arcade.color.BLACK}
+        }
+        username_bg = self.username_input.with_background(texture=patch).with_padding(top=10, left=10)
+        self.v_box.add(username_bg.with_border(width=0))
+        self.password_input = arcade.gui.UIInputText(
+            text='Пароль',
+            width=400,
+            height=50,
+            font_size=20,
+            font_name="Kenney Future",
+            text_color=arcade.color.BLACK,
+            text_align="center"
+        )
+        self.password_input.style = {
+            "normal": {"bg_color": (0, 0, 0, 0), "border_width": 0, "font_color": arcade.color.BLACK},
+            "focused": {"bg_color": (0, 0, 0, 0), "border_width": 0, "font_color": arcade.color.BLACK}
+        }
+        password_bg = self.password_input.with_background(texture=patch).with_padding(top=10, left=10)
+        self.v_box.add(password_bg.with_border(width=0))
+        self.error_label = arcade.gui.UILabel(
+            text="",
+            font_size=16,
+            font_name="Kenney Future",
+            text_color=arcade.color.RED
+        )
+        self.v_box.add(self.error_label)
+        login_button = arcade.gui.UITextureButton(
+            text="Войти",
+            texture=patch,
+            texture_hovered=patch,
+            width=300,
+            height=60,
+            style=button_style
+        )
+        login_button.on_click = self.on_login
+        self.v_box.add(login_button)
+        register_button = arcade.gui.UITextureButton(
+            text="Регистрация",
+            texture=patch,
+            texture_hovered=patch,
+            width=300,
+            height=60,
+            style=button_style
+        )
+        register_button.on_click = self.on_register
+        self.v_box.add(register_button)
+        self.anchor_layout.add(child=self.v_box, anchor_x="center_x", anchor_y="center_y")
+        self.manager.add(self.anchor_layout)
+
+    def on_show_view(self):
+        self.manager.enable()
+        if not self.music_now:
+            self.music_now = arcade.play_sound(self.music, volume=0.8, loop=True)
+
+    def on_hide_view(self):
+        self.manager.disable()
+
+    def on_login(self, event):
+        username = self.username_input.text.strip()
+        password = self.password_input.text.strip()
+        if not username or not password:
+            self.error_label.text = "Заполните все поля"
+            return
+        try:
+            response = requests.post(
+                'http://127.0.0.1:8080/api/game/login',
+                json={'username': username, 'password': password},
+                timeout=5
+            )
+            if response.status_code == 200:
+                data = response.json()
+                self.error_label.text = f" Добро пожаловать, {username}!"
+                if self.music_now:
+                    arcade.stop_sound(self.music_now)
+                    self.music_now = None
+                game_view = GameView(username)
+                game_view.setup()
+                self.window.show_view(game_view)
+            elif response.status_code == 401:
+                self.error_label.text = "Неверный логин или пароль"
+                self.password_input.text = ''
+            else:
+                self.error_label.text = f"Ошибка сервера: {response.status_code}"
+        except requests.exceptions.ConnectionError:
+            self.error_label.text = "Нет соединения с сервером"
+
+    def on_register(self, event):
+        if self.music_now:
+            arcade.stop_sound(self.music_now)
+            self.music_now = None
+        self.window.show_view(RegisterView())
+
+    def on_draw(self):
+        self.clear()
+        arcade.draw_texture_rect(self.background, arcade.rect.XYWH(
+            self.window.width / 2, self.window.height / 2, SCREEN_WIDTH, SCREEN_HEIGHT * 1.5))
+        self.manager.draw()
+
+
+class RegisterView(arcade.View):
+    def __init__(self):
+        super().__init__()
+        arcade.load_font("Kenney Future.ttf")
+        self.music = arcade.load_sound("menu_music.mp3")
+        self.music_now = None
+        self.background = arcade.load_texture("fon.png")
+        self.manager = arcade.gui.UIManager()
+        self.anchor_layout = arcade.gui.UIAnchorLayout()
+        texture = arcade.load_texture("menuknopka.png")
+        patch = arcade.gui.NinePatchTexture(
+            texture=texture,
+            left=12, right=12, bottom=12, top=12,
+        )
+        button_style = {
+            "normal": {
+                "font_name": "Kenney Future",
+                "font_size": 15,
+                "font_color": arcade.color.DARK_BLUE_GRAY
+            },
+            "hover": {
+                "font_name": "Kenney Future",
+                "font_size": 15,
+                "font_color": arcade.color.BLACK
+            },
+            "press": {
+                "font_name": "Kenney Future",
+                "font_size": 15,
+                "font_color": arcade.color.WHITE
+            }
+        }
+        self.v_box = arcade.gui.UIBoxLayout(space_between=20)
+        title = arcade.gui.UILabel(
+            text="РЕГИСТРАЦИЯ",
+            font_size=45,
+            font_name="Kenney Future",
+            text_color=arcade.color.GOLD
+        )
+        self.v_box.add(title)
+        self.username_input = arcade.gui.UIInputText(
+            text='Логин',
+            width=400,
+            height=50,
+            font_size=20,
+            font_name="Kenney Future",
+            text_color=arcade.color.BLACK,
+            text_align="center"
+        )
+        self.username_input.style = {
+            "normal": {"bg_color": (0, 0, 0, 0), "border_width": 0, "font_color": arcade.color.BLACK},
+            "focused": {"bg_color": (0, 0, 0, 0), "border_width": 0, "font_color": arcade.color.BLACK}
+        }
+        username_bg = self.username_input.with_background(texture=patch).with_padding(top=10, left=10)
+        self.v_box.add(username_bg.with_border(width=0))
+        self.password_input = arcade.gui.UIInputText(
+            text='Пароль (мин. 6 символов)',
+            width=400,
+            height=50,
+            font_size=20,
+            font_name="Kenney Future",
+            text_color=arcade.color.BLACK,
+            text_align="center"
+        )
+        self.password_input.style = {
+            "normal": {"bg_color": (0, 0, 0, 0), "border_width": 0, "font_color": arcade.color.BLACK},
+            "focused": {"bg_color": (0, 0, 0, 0), "border_width": 0, "font_color": arcade.color.BLACK}
+        }
+        password_bg = self.password_input.with_background(texture=patch).with_padding(top=10, left=10)
+        self.v_box.add(password_bg.with_border(width=0))
+        self.error_label = arcade.gui.UILabel(
+            text="",
+            font_size=16,
+            font_name="Kenney Future",
+            text_color=arcade.color.RED
+        )
+        self.v_box.add(self.error_label)
+        register_button = arcade.gui.UITextureButton(
+            text="Зарегистрироваться",
+            texture=patch,
+            texture_hovered=patch,
+            width=300,
+            height=60,
+            style=button_style
+        )
+        register_button.on_click = self.on_register
+        self.v_box.add(register_button)
+        login_button = arcade.gui.UITextureButton(
+            text="Уже есть аккаунт?",
+            texture=patch,
+            texture_hovered=patch,
+            width=300,
+            height=60,
+            style=button_style
+        )
+        login_button.on_click = self.on_login
+        self.v_box.add(login_button)
+        self.anchor_layout.add(child=self.v_box, anchor_x="center_x", anchor_y="center_y")
+        self.manager.add(self.anchor_layout)
+
+    def on_show_view(self):
+        self.manager.enable()
+        if not self.music_now:
+            self.music_now = arcade.play_sound(self.music, volume=0.8, loop=True)
+
+    def on_hide_view(self):
+        self.manager.disable()
+
+    def on_register(self, event):
+        username = self.username_input.text.strip()
+        password = self.password_input.text.strip()
+        if not username or not password:
+            self.error_label.text = "Заполните все поля"
+            return
+
+        if len(username) < 2:
+            self.error_label.text = "Логин должен быть минимум 2 символа"
+            return
+
+        if len(password) < 6:
+            self.error_label.text = "Пароль должен быть минимум 6 символов"
+            return
+        try:
+            response = requests.post(
+                'http://127.0.0.1:8080/api/game/register',
+                json={'username': username, 'password': password},
+                timeout=5
+            )
+            if response.status_code == 201:
+                self.error_label.text = f"Аккаунт создан!"
+                if self.music_now:
+                    arcade.stop_sound(self.music_now)
+                    self.music_now = None
+                game_view = GameView(username)
+                game_view.setup()
+                self.window.show_view(game_view)
+            elif response.status_code == 409:
+                self.error_label.text = "Этот логин уже используется"
+                self.username_input.text = ''
+            else:
+                self.error_label.text = f"Ошибка сервера: {response.status_code}"
+        except requests.exceptions.ConnectionError:
+            self.error_label.text = "Нет соединения с сервером"
+
+    def on_login(self, event):
+        if self.music_now:
+            arcade.stop_sound(self.music_now)
+            self.music_now = None
+        self.window.show_view(LoginView())
+
+    def on_draw(self):
+        self.clear()
+        arcade.draw_texture_rect(self.background, arcade.rect.XYWH(
+            self.window.width / 2, self.window.height / 2, SCREEN_WIDTH, SCREEN_HEIGHT * 1.5))
+        self.manager.draw()
 
 def main():
     """ Главная точка входа в приложение. """

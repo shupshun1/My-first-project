@@ -139,8 +139,68 @@ def get_user_stats(username):
         'swords_thrown': user.swords_thrown,
         'swords_missed': user.swords_missed,
         'enemies_killed': user.enemies_killed,
+        'total_wave': user.total_wave,
         'bats_killed': user.bats_killed
     })
+
+@app.route("/api/game/register", methods=['POST'])
+def api_register():
+    """Регистрация из игры"""
+    data = request.json
+    if not data or "username" not in data or "password" not in data:
+        return jsonify({"error": "Missing data"}), 400
+    username = data["username"].strip()
+    password = data["password"]
+    if len(username) < 2:
+        return jsonify({"error": "Username must be at least 2 characters"}), 400
+    if len(password) < 6:
+        return jsonify({"error": "Password must be at least 6 characters"}), 400
+    db_sess = db_session.create_session()
+    existintg_user = db_sess.query(User).filter(User.username == username).first()
+    if existintg_user:
+        return jsonify({"error": "Username already exists"}), 400
+    user = User(
+        username=username,
+        hashed_password=generate_password_hash(password),
+        kills= 0,
+        deaths=0,
+        bosses_defeated=0,
+        swords_hitted=0,
+        swords_thrown=0,
+        swords_missed=0,
+        total_wave=0,
+        enemies_killed=0,
+        bats_killed=0
+    )
+    db_sess.add(user)
+    db_sess.commit()
+    print("dadadasdsa")
+    return jsonify({
+        "status": "ok",
+        "user_id": user.id,
+        "message": "User created"
+    }), 201
+
+
+@app.route("/api/game/login", methods=['POST'])
+def api_login():
+    data = request.json
+    if not data or "username" not in data or "password" not in data:
+        return jsonify({"error": "Missing data"}), 400
+    username = data["username"].strip()
+    password = data["password"]
+    db_sess = db_session.create_session()
+    user = db_sess.query(User).filter(User.username == username).first()
+    if not user:
+        return jsonify({"error": "Wrong login or password"}), 401
+    if not check_password_hash(user.hashed_password, password):
+        return jsonify({"error": "Wrong login or password"}), 401
+    print("ewewew")
+    return jsonify({
+        "status": "ok",
+        "user_id": user.id,
+        "username": user.username
+    }), 200
 
 
 if __name__ == '__main__':

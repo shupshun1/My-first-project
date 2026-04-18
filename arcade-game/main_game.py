@@ -32,63 +32,6 @@ CAMERA_LERP = 0.12
 arcade.load_font("Kenney Future.ttf")
 
 
-class Database:
-    """ Класс для управления базой данных SQLite. """
-    def __init__(self, db_name="leaderboard.db"):
-        """ Инициализация подключения и проверка существования БД. """
-        self.db_name = db_name
-        self._init_db()
-
-    def _init_db(self):
-        """ Создает таблицу лидеров, если она еще не создана в файле .db. """
-        with sqlite3.connect(self.db_name) as conn:
-            cursor = conn.cursor()
-            cursor.execute("""
-                CREATE TABLE IF NOT EXISTS leaders (
-                    id INTEGER PRIMARY KEY AUTOINCREMENT,
-                    name TEXT NOT NULL,
-                    time REAL NOT NULL,
-                    waves_completed INTEGER NOT NULL,
-                    enemies_killed INTEGER NOT NULL,
-                    bats_killed INTEGER NOT NULL,
-                    bosses_killed INTEGER NOT NULL,
-                    swords_thrown INTEGER NOT NULL,
-                    swords_missed INTEGER NOT NULL,
-                    swords_hitted INTEGER NOT NULL
-                )
-            """)
-            conn.commit()
-
-    def save_result(self, stats):
-        """ Записывает новый результат игрока в базу данных. """
-        with sqlite3.connect(self.db_name) as conn:
-            cursor = conn.cursor()
-            cursor.execute("""
-                            INSERT INTO leaders (
-                                name, time, waves_completed, enemies_killed, 
-                                bats_killed, bosses_killed, swords_thrown, 
-                                swords_missed, swords_hitted
-                            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
-                        """, (
-                stats['name'], stats['time'], stats['waves'], stats['enemies'],
-                stats['bats'], stats['bosses'], stats['thrown'],
-                stats['missed'], stats['hitted']
-            ))
-            conn.commit()
-
-    def get_result(self, limit=10):
-        """ Извлекает из базы список лучших результатов. """
-        with sqlite3.connect(self.db_name) as conn:
-            cursor = conn.cursor()
-            cursor.execute("""
-                            SELECT name, waves_completed, time 
-                            FROM leaders 
-                            ORDER BY waves_completed DESC, time DESC 
-                            LIMIT ?
-                        """, (limit,))
-            return cursor.fetchall()
-
-
 class Particle(arcade.Sprite):
     """ Класс визуального эффекта (частицы). """
     def __init__(self, x, y, color):
@@ -551,8 +494,6 @@ class GameView(arcade.View):
         self.swords_thrown = 0
         self.swords_missed = 0
         self.swords_hitted = 0
-
-        self.db = Database()
 
         # --- ЗАГРУЗКА РЕСУРСОВ ---
         self.sounds = {
@@ -1047,124 +988,6 @@ class GameView(arcade.View):
             self.key_pressed.remove(key)
 
 
-class Leaderboard(arcade.View):
-    """ Экран таблицы лидеров. """
-    def __init__(self):
-        super().__init__()
-
-        # Ресурсы и звук
-        self.music = arcade.load_sound("menu_music.mp3")
-        self.music_now = None
-        arcade.load_font("Kenney Future.ttf")
-        self.fon = arcade.load_texture("fon.png")
-
-        # Настройка UI менеджера
-        self.manager = arcade.gui.UIManager()
-        self.v_box = arcade.gui.UIBoxLayout(space_between=10)
-
-        # Заголовок таблицы
-        title = arcade.gui.UILabel(
-            text="Лучшие игроки",
-            font_size=30,
-            font_name="Kenney Future",
-            text_color=arcade.color.GOLD
-        )
-        self.v_box.add(title)
-
-        # Настройка текстуры кнопки (NinePatch позволяет растягивать кнопку без искажений)
-        texture = arcade.load_texture("menuknopka.png")
-        patch = arcade.gui.NinePatchTexture(
-            texture=texture,
-            left=12, right=12, bottom=12, top=12,
-        )
-
-        # Стили кнопок
-        button_style = {
-            "normal": {
-                "font_name": "Kenney Future",
-                "font_size": 15,
-                "font_color": arcade.color.DARK_BLUE_GRAY
-            },
-            "hover": {
-                "font_name": "Kenney Future",
-                "font_size": 15,
-                "font_color": arcade.color.BLACK
-            },
-            "press": {
-                "font_name": "Kenney Future",
-                "font_size": 15,
-                "font_color": arcade.color.WHITE
-            }
-        }
-
-        # --- ЗАГРУЗКА ДАННЫХ ИЗ БАЗЫ ---
-        top_players = Database().get_result(10)
-
-        if not top_players:
-            no_data = arcade.gui.UILabel(text="Рекордов пока нет", font_size=20)
-            self.v_box.add(no_data)
-        else:
-            for i, (name, waves, time_value) in enumerate(top_players):
-                # Форматируем время
-                minutes = int(time_value) // 60
-                seconds = int(time_value) % 60
-
-                # Теперь текст будет включать и волны, и время
-                display_text = f"{i+1}. {name} | Волн: {waves} | Время: {minutes:02d}:{seconds:02d}"
-
-                label = arcade.gui.UILabel(
-                    text=display_text,
-                    font_size=20,
-                    font_name="Kenney Future",
-                    text_color=arcade.color.WHITE
-                )
-                self.v_box.add(label)
-
-        # Кнопка возврата
-        back_button = arcade.gui.UITextureButton(
-            text="Назад",
-            texture=patch,
-            texture_hovered=patch,
-            width=300,
-            height=60,
-            style=button_style
-        )
-        back_button.on_click = self.on_click_back
-        self.v_box.add(back_button)
-
-        # Размещение элементов по центру экрана
-        anchor_layout = arcade.gui.UIAnchorLayout()
-        anchor_layout.add(child=self.v_box, anchor_x="center_x", anchor_y="center_y")
-        self.manager.add(anchor_layout)
-
-    def on_click_back(self, event):
-        """ Возврат в главное меню с остановкой музыки. """
-        if self.music_now:
-            arcade.stop_sound(self.music_now)
-            self.music_now = None
-        self.window.show_view(MenuView())
-
-    def on_show_view(self):
-        """ Включение менеджера интерфейса и запуск музыки при открытии экрана. """
-        self.manager.enable()
-        if not self.music_now:
-            self.music_now = arcade.play_sound(self.music, volume=0.8, loop=True)
-
-    def on_hide_view(self):
-        """ Отключение менеджера при уходе с экрана. """
-        self.manager.disable()
-
-    def on_draw(self):
-        """ Отрисовка фона и элементов интерфейса. """
-        self.clear()
-
-        # Отрисовка фонового изображения
-        arcade.draw_texture_rect(self.fon, arcade.rect.XYWH(
-            self.window.width / 2, self.window.height / 2, SCREEN_WIDTH, SCREEN_HEIGHT * 1.5))
-
-        self.manager.draw()
-
-
 class PauseView(arcade.View):
     """ Экран паузы. """
     def __init__(self, game_view):
@@ -1193,6 +1016,9 @@ class PauseView(arcade.View):
         resume_button.on_click = self.on_click_resume
         self.v_box.add(resume_button)
 
+        back_button = arcade.gui.UIFlatButton(text='В меню', width=200)
+        back_button.on_click = self.on_click_exit
+        self.v_box.add(back_button)
         # Компоновка элементов по центру
         self.anchor_layout.add(
             child=self.v_box,
@@ -1204,6 +1030,14 @@ class PauseView(arcade.View):
     def on_click_resume(self, event):
         """ Возвращает игрока на тот же экран игры, с которого была вызвана пауза. """
         self.window.show_view(self.game_view)
+
+    def on_click_exit(self, event):
+        """ Возвращает игрока на экран менюшки"""
+        if self.game_view.music_now:
+            arcade.stop_sound(self.game_view.music_now)
+            self.game_view.music_now = None
+        username = self.game_view.username
+        self.window.show_view(MenuView(username=username))
 
     def on_show_view(self):
         """ Включение менеджера интерфейса. """
@@ -1276,7 +1110,8 @@ class GameOver(arcade.View):
 
     def on_click_menu(self, event):
         """ Возвращает игрока в стартовое меню. """
-        self.window.show_view(MenuView())
+        username = self.game_view.username
+        self.window.show_view(MenuView(username=username))
 
     def on_show_view(self):
         """ Включение менеджера UI при отображении экрана. """
@@ -1315,7 +1150,7 @@ class GameOver(arcade.View):
 
 class MenuView(arcade.View):
     """ Главное меню игры. """
-    def __init__(self):
+    def __init__(self, username=None):
         super().__init__()
 
         # Ресурсы и шрифты
@@ -1323,6 +1158,7 @@ class MenuView(arcade.View):
         self.music_now = None
         arcade.load_font("Kenney Future.ttf")
         self.background = arcade.load_texture("fon.png")
+        self.username = username
 
         # Настройка UI менеджера
         self.manager = arcade.gui.UIManager()
@@ -1357,6 +1193,15 @@ class MenuView(arcade.View):
         # Контейнер для вертикального расположения элементов
         self.v_box = arcade.gui.UIBoxLayout(space_between=35)
 
+        if self.username:
+            nickname_label = arcade.gui.UILabel(
+                text=f"👤 {self.username}",
+                font_size=30,
+                font_name="Kenney Future",
+                text_color=arcade.color.GOLD
+            )
+            self.v_box.add(nickname_label)
+
         # Заголовок игры
         self.label = arcade.gui.UILabel(
             text="BATTLE ARENA",
@@ -1376,31 +1221,31 @@ class MenuView(arcade.View):
         )
         self.v_box.add(self.start_button)
 
-        login_button = arcade.gui.UITextureButton(
-            text="Войти / Регистрация",
-            texture=patch,
-            texture_hovered=patch,
-            width=300,
-            height=60,
-            style=button_style
-        )
-        login_button.on_click = self.on_click_login
-        self.v_box.add(login_button)
-
-        # Кнопка таблицы лидеров
-        self.leader_button = arcade.gui.UITextureButton(
-            text="Таблица лидеров",
-            texture=patch,
-            texture_hovered=patch,
-            width=300,
-            height=60,
-            style=button_style
-        )
-        self.v_box.add(self.leader_button)
+        if not self.username:
+            login_button = arcade.gui.UITextureButton(
+                text="Войти / Регистрация",
+                texture=patch,
+                texture_hovered=patch,
+                width=300,
+                height=60,
+                style=button_style
+            )
+            login_button.on_click = self.on_click_login
+            self.v_box.add(login_button)
+        else:
+            logout_button = arcade.gui.UITextureButton(
+                text="Выход из аккаунта",
+                texture=patch,
+                texture_hovered=patch,
+                width=300,
+                height=60,
+                style=button_style
+            )
+            logout_button.on_click = self.on_click_logout
+            self.v_box.add(logout_button)
 
         # Привязка событий
         self.start_button.on_click = self.on_click_start
-        self.leader_button.on_click = self.on_click_show_leaders
 
         # Центрирование всего блока меню
         self.anchor_layout.add(child=self.v_box, anchor_x="center_x", anchor_y="center_y")
@@ -1412,36 +1257,29 @@ class MenuView(arcade.View):
         if not self.music_now:
             self.music_now = arcade.play_sound(self.music, volume=0.8, loop=True)
 
-    def on_click_show_leaders(self, event):
-        """ Переход к таблице рекордов. """
-        if self.music_now:
-            arcade.stop_sound(self.music_now)
-            self.music_now = None
-        self.window.show_view(Leaderboard())
-
     def on_click_login(self, event):
         if self.music_now:
             arcade.stop_sound(self.music_now)
             self.music_now = None
         self.window.show_view(LoginView())
 
-    def on_click_start(self, event):
-        """ Логика проверки никнейма и запуска основной игры. """
-        # Получаем текст и убираем лишние пробелы
-        username = self.name_input.text.strip()
-
-        # Проверка на валидность имени
-        if not username or username == 'Введите никнейм' or len(username) < 2:
-            self.name_input.text_color = arcade.color.RED
-            return
-
-        # Если проверка прошла, останавливаем музыку
+    def on_click_logout(self, event):
         if self.music_now:
             arcade.stop_sound(self.music_now)
             self.music_now = None
+        self.window.show_view(MenuView(username=None))
 
+    def on_click_start(self, event):
+        """ Логика проверки никнейма и запуска основной игры. """
+        # Получаем текст и убираем лишние пробелы
+        if not self.username:
+            self.on_click_login(None)
+            return
+        if self.music_now:
+            arcade.stop_sound(self.music_now)
+            self.music_now = None
         # Запускаем игру, передавая очищенный никнейм
-        game_view = GameView(username)
+        game_view = GameView(self.username)
         game_view.setup()
         self.window.show_view(game_view)
 
@@ -1584,7 +1422,7 @@ class LoginView(arcade.View):
                     self.music_now = None
                 game_view = GameView(username)
                 game_view.setup()
-                self.window.show_view(game_view)
+                self.window.show_view(MenuView(username=username))
             elif response.status_code == 401:
                 self.error_label.text = "Неверный логин или пароль"
                 self.password_input.text = ''
@@ -1740,7 +1578,7 @@ class RegisterView(arcade.View):
                     self.music_now = None
                 game_view = GameView(username)
                 game_view.setup()
-                self.window.show_view(game_view)
+                self.window.show_view(MenuView(username=username))
             elif response.status_code == 409:
                 self.error_label.text = "Этот логин уже используется"
                 self.username_input.text = ''

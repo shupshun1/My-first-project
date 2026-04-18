@@ -1,3 +1,4 @@
+import datetime
 from flask import Flask, render_template, redirect, session, request, jsonify
 from forms import LoginForm, RegisterForm
 from werkzeug.utils import secure_filename
@@ -201,6 +202,38 @@ def api_login():
         "user_id": user.id,
         "username": user.username
     }), 200
+
+
+@app.route("/edit-profile", methods=['GET', 'POST'])
+def edit_profile():
+    db_sess = db_session.create_session()
+    user = db_sess.get(User, session['user_id'])
+    if request.method == 'GET':
+        return render_template("edit-profile.html", user=user)
+    if request.method == 'POST':
+        user.username = request.form.get("username", user.username)
+        user.name = request.form.get("name", user.name)
+        user.surname = request.form.get("surname", user.surname)
+        user.age = request.form.get("age", user.age)
+        user.gender = request.form.get("gender", user.gender)
+        user.message = request.form.get("message", user.message)
+        new_password = request.form.get("password", '').strip()
+        if new_password:
+            if len(new_password) < 6:
+                return render_template("edit-profile.html",
+                                       user=user,
+                                       error='Пароль должен быть минимум 6 символов')
+            user.hashed_password = generate_password_hash(new_password)
+        if 'photo' in request.files and request.files['photo'].filename:
+            f = request.files['photo']
+            filename = secure_filename(f.filename)
+            f.save(os.path.join(app.root_path, 'static', 'img', filename))
+            user.photo = filename
+        user.modified = datetime.datetime.now()
+        db_sess.commit()
+        return render_template("edit-profile.html", user=user, success='Профиль обновлен')
+    return render_template("edit-profile.html", user=user)
+
 
 
 if __name__ == '__main__':

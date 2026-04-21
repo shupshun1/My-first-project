@@ -27,6 +27,10 @@
                     <input type="file" class="form-control" id="photo" name="photo" accept="image/*">
                 </div>
                 <div class="mb-3">
+                    <label for="username" class="form-label">Имя</label>
+                    <input type="text" class="form-control" id="username" name="username" value="{{ user.username or '' }}">
+                </div>
+                <div class="mb-3">
                     <label for="name" class="form-label">Имя</label>
                     <input type="text" class="form-control" id="name" name="name" value="{{ user.name or '' }}">
                 </div>

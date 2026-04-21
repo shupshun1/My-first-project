@@ -929,10 +929,10 @@ class GameView(arcade.View):
                     'bosses_defeated': self.bosses_killed,
                     'swords_thrown': self.swords_thrown,
                     'swords_hitted': self.swords_hitted,
-                    'swords_missed': self.swords_missed
+                    'swords_missed': self.swords_missed,
+                    'score': (self.bats_killed * 2) + (self.enemies_killed * 3) + (self.bosses_killed * 10)
                 }
                 self.stats_api.send(game_stats)
-                # self.db.save_result(game_stats)
 
             self.player.remove_from_sprite_lists()
             self.spawn_particles(self.player.center_x, self.player.center_y, arcade.color.RED_DEVIL, count=40)

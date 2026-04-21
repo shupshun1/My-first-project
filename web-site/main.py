@@ -109,6 +109,7 @@ def update_stats():
         total_wave=data.get('total_wave', 0),
         enemies_killed=data.get('enemies_killed', 0),
         bats_killed=data.get('bats_killed', 0),
+        score=data.get('score', 0)
     )
     db_sess.commit()
     return jsonify({
@@ -122,7 +123,8 @@ def update_stats():
         'swords_missed': user.swords_missed,
         'enemies_killed': user.enemies_killed,
         'total_wave': user.total_wave,
-        'bats_killed': user.bats_killed
+        'bats_killed': user.bats_killed,
+        'score': user.score
     })
 
 @app.route("/api/user/<username>", methods=['GET'])
@@ -141,7 +143,8 @@ def get_user_stats(username):
         'swords_missed': user.swords_missed,
         'enemies_killed': user.enemies_killed,
         'total_wave': user.total_wave,
-        'bats_killed': user.bats_killed
+        'bats_killed': user.bats_killed,
+        'score': user.score
     })
 
 @app.route("/api/game/register", methods=['POST'])
@@ -171,7 +174,8 @@ def api_register():
         swords_missed=0,
         total_wave=0,
         enemies_killed=0,
-        bats_killed=0
+        bats_killed=0,
+        score=0
     )
     db_sess.add(user)
     db_sess.commit()

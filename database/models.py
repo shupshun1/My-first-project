@@ -29,6 +29,8 @@ class User(SqlAlchemyBase):
     swords_thrown = sqlalchemy.Column(sqlalchemy.Integer, default=0)
     swords_missed = sqlalchemy.Column(sqlalchemy.Integer, default=0)
     swords_hitted = sqlalchemy.Column(sqlalchemy.Integer, default=0)
+    score = sqlalchemy.Column(sqlalchemy.Integer, default=0)
+    active_skin = sqlalchemy.Column(sqlalchemy.Integer, default=0)
     created_date = sqlalchemy.Column(sqlalchemy.DateTime,
                                      default=datetime.datetime.now)
     modified_date = sqlalchemy.Column(sqlalchemy.DateTime,
@@ -37,7 +39,7 @@ class User(SqlAlchemyBase):
 
     def update_stats(self, kills=0, deaths=0, bosses_defeated=0, swords_thrown=0,
                      swords_missed=0, swords_hitted=0, enemies_killed=0,
-                     bats_killed=0, total_wave=0):
+                     bats_killed=0, total_wave=0, score=0):
         self.kills += kills
         self.deaths += deaths
         self.bosses_defeated += bosses_defeated
@@ -46,6 +48,7 @@ class User(SqlAlchemyBase):
         self.swords_hitted += swords_hitted
         self.enemies_killed += enemies_killed
         self.bats_killed += bats_killed
+        self.score += score
 
         if total_wave > self.total_wave:
             self.total_wave = total_wave

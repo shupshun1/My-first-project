@@ -21,15 +21,15 @@
                 <div class="text-start px-3">
                     <div class="row mb-3 align-items-center">
                         <div class="col-sm-4 text-muted small text-uppercase fw-bold">ФИО:</div>
-                        <div class="col-sm-8 fw-semibold text-dark">{{ user.name }} {{ user.surname }}</div>
+                        <div class="col-sm-8 fw-semibold text-light">{{ user.name }} {{ user.surname }}</div>
                     </div>
                     <div class="row mb-3 align-items-center">
                         <div class="col-sm-4 text-muted small text-uppercase fw-bold">Возраст:</div>
-                        <div class="col-sm-8 text-dark">{{user.age}} лет</div>
+                        <div class="col-sm-8 text-light">{{user.age}} лет</div>
                     </div>
                     <div class="row mb-3 align-items-center">
                         <div class="col-sm-4 text-muted small text-uppercase fw-bold">Пол:</div>
-                        <div class="col-sm-8 text-dark">
+                        <div class="col-sm-8 text-light">
                             {% if user.gender == 'Мужской' %}
                                 <span class="badge bg-info text-dark">{{ user.gender }}</span>
                             {% else %}
@@ -40,18 +40,18 @@
                     {% if user.message %}
                     <div class="row mb-3 align-items-center">
                         <div class="col-sm-4 text-muted small text-uppercase fw-bold">Цитата:</div>
-                        <div class="col-sm-8 text-dark fst-italic">"{{ user.message }}"</div>
+                        <div class="col-sm-8 text-light fst-italic">"{{ user.message }}"</div>
                     </div>
                     {% endif %}
                 </div>
             </div>
-        <div class="card-footer bg-light border-0 text-center p-3 rounded-bottom-3">
-        <a href="/edit-profile" class="btn btn-primary px-4">✏️ Изменить данные</a>
+        <div class="card-footer bg-darkblue border-0 text-center p-3 rounded-bottom-3">
+        <a href="/edit-profile" class="btn btn-primary px-4">Изменить данные</a>
         </div>
-        <div class="card-footer bg-light border-0 text-center p-3 rounded-bottom-3">
-        <a href="/logout" class="btn btn-primary px-4">🚪 Выход из профиля</a>
+        <div class="card-footer bg-darkblue border-0 text-center p-3 rounded-bottom-3">
+        <a href="/logout" class="btn btn-primary px-4">Выход из профиля</a>
         </div>
-            <div class="card-footer bg-light border-0 text-center p-3 rounded-bottom-3">
+            <div class="card-footer bg-darkblue border-0 text-center p-3 rounded-bottom-3">
                 <a href="/" class="btn btn-primary px-4">На главную страницу</a>
             </div>
         </div>

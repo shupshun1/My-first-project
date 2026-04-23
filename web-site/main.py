@@ -19,6 +19,17 @@ app.config['SECRET_KEY'] = 'dev-key'
 db_session.global_init("../database/game.db")
 
 
+@app.route('/')
+def index():
+    user = None
+    if 'user_id' in session:
+        db_sess = db_session.create_session()
+        user = db_sess.get(User, session['user_id'])
+        if not user:
+            session.pop('user_id', None)
+    return render_template('index.html', user=user)
+
+
 @app.route('/register', methods=['GET', 'POST'])
 def register():
     form = RegisterForm()
@@ -48,7 +59,7 @@ def register():
         db_sess.commit()
         session['user_id'] = user.id
         print(user)
-        return redirect('/success')
+        return redirect('/profile')
     return render_template('register.html', title="Регистрация", form=form)
 
 
@@ -87,11 +98,6 @@ def logout():
     session.pop('user_id', None)
     return redirect('/login')
 
-
-@app.route('/success')
-def success():
-    return render_template('success.html', title="Аккаунт создан!")
-
 @app.route('/api/update-stats', methods=['POST'])
 def update_stats():
     data = request.json
@@ -109,7 +115,7 @@ def update_stats():
         total_wave=data.get('total_wave', 0),
         enemies_killed=data.get('enemies_killed', 0),
         bats_killed=data.get('bats_killed', 0),
-        score=data.get('score', 0)
+        balance=data.get('balance', 0)
     )
     db_sess.commit()
     return jsonify({
@@ -124,7 +130,7 @@ def update_stats():
         'enemies_killed': user.enemies_killed,
         'total_wave': user.total_wave,
         'bats_killed': user.bats_killed,
-        'score': user.score
+        'balance': user.balance
     })
 
 @app.route("/api/user/<username>", methods=['GET'])
@@ -144,7 +150,7 @@ def get_user_stats(username):
         'enemies_killed': user.enemies_killed,
         'total_wave': user.total_wave,
         'bats_killed': user.bats_killed,
-        'score': user.score
+        'balance': user.balance
     })
 
 @app.route("/api/game/register", methods=['POST'])
@@ -175,7 +181,7 @@ def api_register():
         total_wave=0,
         enemies_killed=0,
         bats_killed=0,
-        score=0
+        balance=0
     )
     db_sess.add(user)
     db_sess.commit()

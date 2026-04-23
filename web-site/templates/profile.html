@@ -1,12 +1,12 @@
 {% extends "base.html" %}
 
 {% block content %}
-<div class="row justify-content-center mt-5">
+<div class="row justify-content-center mt-6" style="padding: 15px;">
     <div class="col-md-6 col-lg-5"> <div class="card shadow-lg border-0 rounded-3"> <div class="card-body text-center p-4"> <div class="mb-4 d-flex justify-content-center">
                     {% if user.photo %}
                         <img src="{{ url_for('static', filename='img/' + user.photo) }}"
                              alt="Аватар игрока"
-                             class="rounded-circle shadow object-fit-cover border border-4 border-white"
+                             class="rounded-circle shadow object-fit-cover border border-4 border-black"
                              style="width: 150px; height: 150px; min-width: 150px; min-height: 150px;">
                     {% else %}
                         <div class="rounded-circle bg-light d-flex align-items-center justify-content-center shadow border border-4 border-white text-secondary"
@@ -45,14 +45,14 @@
                     {% endif %}
                 </div>
             </div>
-        <div class="card-footer bg-darkblue border-0 text-center p-3 rounded-bottom-3">
-        <a href="/edit-profile" class="btn btn-primary px-4">Изменить данные</a>
+        <div class="card-footer bg-darkpurple border-0 text-center p-3">
+        <a href="/edit-profile" class="btn btn-outline-info btn-lg" style="border-radius: 12px;">Изменить данные</a>
         </div>
-        <div class="card-footer bg-darkblue border-0 text-center p-3 rounded-bottom-3">
-        <a href="/logout" class="btn btn-primary px-4">Выход из профиля</a>
+        <div class="card-footer bg-darkpurple border-0 text-center p-3">
+        <a href="/logout" class="btn btn-outline-info btn-lg" style="border-radius: 12px;">Выход из профиля</a>
         </div>
-            <div class="card-footer bg-darkblue border-0 text-center p-3 rounded-bottom-3">
-                <a href="/" class="btn btn-primary px-4">На главную страницу</a>
+            <div class="card-footer bg-darkpurple border-0 text-center p-3">
+                <a href="/" class="btn btn-outline-info btn-lg" style="border-radius: 12px;">На главную страницу</a>
             </div>
         </div>
         <div class="text-center text-muted small mt-3">

@@ -15,8 +15,8 @@
                 {% if user %}
                     <span style="margin-right: 20px; color: #00d4ff;">{{ user.username }} (⭐ {{ user.balance or 0 }})</span>
                 {% else %}
-                    <a href="/login" class="btn-auth" style="margin-right: 10px;">Вход</a>
-                    <a href="/register" class="btn-auth btn-register">Регистрация</a>
+                    <a href="/login" class="btn btn-outline-info btn-lg" style="margin-right: 10px; border-radius: 12px;">Вход</a>
+                    <a href="/register" class="btn btn-outline-info btn-lg" style="border-radius: 12px;">Регистрация</a>
                 {% endif %}
             </div>
         </div>

@@ -4,6 +4,7 @@ from forms import LoginForm, RegisterForm
 from werkzeug.utils import secure_filename
 from werkzeug.security import generate_password_hash, check_password_hash
 import os
+import requests
 import sys
 
 sys.path.insert(
@@ -34,6 +35,13 @@ def index():
 def register():
     form = RegisterForm()
     if form.validate_on_submit():
+        user_ip = request.remote_addr
+        try:
+            geo = requests.get(f'http://ip-api.com/json/{user_ip}', timeout=3).json()
+            country = geo.get('country', 'Неизвестно')
+            print(country)
+        except:
+            country = 'Страна неизвестна'
         f = form.photo.data
         filename = secure_filename(f.filename)
         f.save(os.path.join(app.root_path, 'static', 'img', filename))
@@ -48,10 +56,8 @@ def register():
         user = User(
             name=form.name.data,
             surname=form.surname.data,
-            age=form.age.data,
             username=form.username.data,
-            gender=form.gender.data,
-            message=form.message.data,
+            country=country,
             photo=filename
         )
         user.hashed_password = generate_password_hash(password=form.password.data)
@@ -168,7 +174,7 @@ def api_register():
     db_sess = db_session.create_session()
     existintg_user = db_sess.query(User).filter(User.username == username).first()
     if existintg_user:
-        return jsonify({"error": "Username already exists"}), 400
+        return jsonify({"error": "Username already exists"}), 409
     user = User(
         username=username,
         hashed_password=generate_password_hash(password),
@@ -224,10 +230,7 @@ def edit_profile():
         user.username = request.form.get("username", user.username)
         user.name = request.form.get("name", user.name)
         user.surname = request.form.get("surname", user.surname)
-        user.age = request.form.get("age", user.age)
-        user.gender = request.form.get("gender", user.gender)
-        user.message = request.form.get("message", user.message)
-        new_password = request.form.get("password", '').strip()
+        new_password = request.form.get("new_password", '').strip()
         if new_password:
             if len(new_password) < 6:
                 return render_template("edit-profile.html",
@@ -241,9 +244,35 @@ def edit_profile():
             user.photo = filename
         user.modified = datetime.datetime.now()
         db_sess.commit()
-        return render_template("edit-profile.html", user=user, success='Профиль обновлен')
+        return redirect('/profile')
     return render_template("edit-profile.html", user=user)
 
+
+@app.route("/profile/stats", methods=['GET'])
+def profile_stats():
+    if 'user_id' not in session:
+        return redirect('/login')
+    db_sess = db_session.create_session()
+    user = db_sess.get(User, session['user_id'])
+    if not user:
+        session.pop('user_id', None)
+        return redirect('/login')
+    return render_template('profile_stat.html', user=user)
+
+
+@app.route("/about/game", methods=['GET'])
+def about_game():
+    pass
+
+
+@app.route("/leaderboard", methods=['GET'])
+def leaderboard():
+    pass
+
+
+@app.route("/shop", methods=['GET', 'POST'])
+def shop():
+    pass
 
 
 if __name__ == '__main__':

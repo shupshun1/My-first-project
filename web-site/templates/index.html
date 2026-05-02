@@ -198,19 +198,19 @@
         <a href="/" class="logo">⚔️ BATTLE ARENA</a>
         <div>
             {% if user %}
-                <a href="/profile" class="profile-header" title="Открыть профиль">
-                    <div class="profile-avatar">
+                <a href="/profile" class="profile-header text-decoration-none" title="Открыть профиль">
+                    <div class="profile-avatar shadow-sm">
                         {% if user.photo %}
                             <img src="/static/img/{{ user.photo }}" alt="{{ user.username }}">
                         {% else %}
                             {{ user.username[0].upper() }}
                         {% endif %}
                     </div>
-                    <div class="profile-info">
-                        <div class="profile-username">{{ user.username }}</div>
-                        <div class="profile-balance">
-                            <span class="profile-balance-icon">⭐</span>
-                            {{ user.balance or 0 }}
+                    <div class="profile-info text-start ms-1">
+                        <div class="profile-username leading-tight">{{ user.username }}</div>
+                        <div class="profile-balance d-flex align-items-center">
+                            <span class="profile-balance-icon me-1">⭐</span>
+                            <span>{{ user.balance or 0 }}</span>
                         </div>
                     </div>
                 </a>
@@ -224,7 +224,7 @@
     </div>
     <div class="main-container">
         <div class="carousel-placeholder">
-            [заглушка]
+            <img src="/static/img/{{ 222.png }}" alt="Заглушка">
         </div>
         <h2 class="section-title">Об игре</h2>
         <div class="game-card">

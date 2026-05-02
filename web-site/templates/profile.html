@@ -20,29 +20,15 @@
                 <hr class="text-muted my-4">
                 <div class="text-start px-3">
                     <div class="row mb-3 align-items-center">
-                        <div class="col-sm-4 text-muted small text-uppercase fw-bold">ФИО:</div>
-                        <div class="col-sm-8 fw-semibold text-light">{{ user.name }} {{ user.surname }}</div>
+                        <div class="col-sm-4 text-muted small text-uppercase fw-bold">Имя:</div>
+                        <div class="col-sm-8 fw-semibold text-light">{{ user.name }}</div>
                     </div>
+                </div>
+                <div class="text-start px-3">
                     <div class="row mb-3 align-items-center">
-                        <div class="col-sm-4 text-muted small text-uppercase fw-bold">Возраст:</div>
-                        <div class="col-sm-8 text-light">{{user.age}} лет</div>
+                        <div class="col-sm-4 text-muted small text-uppercase fw-bold">Фамилия:</div>
+                        <div class="col-sm-8 fw-semibold text-light">{{ user.surname }}</div>
                     </div>
-                    <div class="row mb-3 align-items-center">
-                        <div class="col-sm-4 text-muted small text-uppercase fw-bold">Пол:</div>
-                        <div class="col-sm-8 text-light">
-                            {% if user.gender == 'Мужской' %}
-                                <span class="badge bg-info text-dark">{{ user.gender }}</span>
-                            {% else %}
-                                <span class="badge bg-danger">{{ user.gender }}</span>
-                            {% endif %}
-                        </div>
-                    </div>
-                    {% if user.message %}
-                    <div class="row mb-3 align-items-center">
-                        <div class="col-sm-4 text-muted small text-uppercase fw-bold">Цитата:</div>
-                        <div class="col-sm-8 text-light fst-italic">"{{ user.message }}"</div>
-                    </div>
-                    {% endif %}
                 </div>
             </div>
         <div class="card-footer bg-darkpurple border-0 text-center p-3">
@@ -54,9 +40,15 @@
             <div class="card-footer bg-darkpurple border-0 text-center p-3">
                 <a href="/" class="btn btn-outline-info btn-lg" style="border-radius: 12px;">На главную страницу</a>
             </div>
+        <div class="card-footer bg-darkpurple border-0 text-center p-3">
+                <a href="/profile/stats" class="btn btn-outline-info btn-lg" style="border-radius: 12px;">Статистика</a>
+            </div>
         </div>
         <div class="text-center text-muted small mt-3">
             Игрок зарегистрирован: {{user.modified_date.strftime('%d.%m.%Y')}}
+        </div>
+        <div class="text-center text-muted small mt-3">
+            Страна регистрации: {{user.country}}
         </div>
     </div>
 </div>

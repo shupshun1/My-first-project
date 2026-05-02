@@ -15,10 +15,8 @@ class User(SqlAlchemyBase):
     hashed_password = sqlalchemy.Column(sqlalchemy.String, nullable=False)
     name = sqlalchemy.Column(sqlalchemy.String, nullable=True)
     surname = sqlalchemy.Column(sqlalchemy.String, nullable=True)
-    age = sqlalchemy.Column(sqlalchemy.Integer, nullable=True)
-    gender = sqlalchemy.Column(sqlalchemy.String, nullable=True)
+    country = sqlalchemy.Column(sqlalchemy.String, nullable=True)
     photo = sqlalchemy.Column(sqlalchemy.String, nullable=True)
-    message = sqlalchemy.Column(sqlalchemy.String, nullable=True)
 
     kills = sqlalchemy.Column(sqlalchemy.Integer, default=0)
     deaths = sqlalchemy.Column(sqlalchemy.Integer, default=0)

@@ -162,6 +162,13 @@ def get_user_stats(username):
 @app.route("/api/game/register", methods=['POST'])
 def api_register():
     """Регистрация из игры"""
+    user_ip = request.remote_addr
+    try:
+        geo = requests.get(f'http://ip-api.com/json/{user_ip}', timeout=3).json()
+        country = geo.get('country', 'Неизвестно')
+        print(country)
+    except:
+        country = 'Страна неизвестна'
     data = request.json
     if not data or "username" not in data or "password" not in data:
         return jsonify({"error": "Missing data"}), 400
@@ -187,7 +194,8 @@ def api_register():
         total_wave=0,
         enemies_killed=0,
         bats_killed=0,
-        balance=0
+        balance=0,
+        country=country
     )
     db_sess.add(user)
     db_sess.commit()

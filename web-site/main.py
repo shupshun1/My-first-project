@@ -250,7 +250,7 @@ def edit_profile():
             filename = secure_filename(f.filename)
             f.save(os.path.join(app.root_path, 'static', 'img', filename))
             user.photo = filename
-        user.modified = datetime.datetime.now()
+        user.modified_date = datetime.datetime.now()
         db_sess.commit()
         return redirect('/profile')
     return render_template("edit-profile.html", user=user)
@@ -270,13 +270,14 @@ def profile_stats():
 
 @app.route("/about/game", methods=['GET'])
 def about_game():
-    pass
+    return render_template("about_game.html")
 
 
 @app.route("/leaderboard", methods=['GET'])
 def leaderboard():
-    pass
-
+    db_sess = db_session.create_session()
+    users = db_sess.query(User).order_by(User.kills.desc()).limit(10).all()
+    return render_template('leaderboard.html', users=users)
 
 @app.route("/shop", methods=['GET', 'POST'])
 def shop():

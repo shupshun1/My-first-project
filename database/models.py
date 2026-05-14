@@ -29,6 +29,7 @@ class User(SqlAlchemyBase):
     swords_hitted = sqlalchemy.Column(sqlalchemy.Integer, default=0)
     balance = sqlalchemy.Column(sqlalchemy.Integer, default=0)
     active_skin = sqlalchemy.Column(sqlalchemy.Integer, default=0)
+    owned_skin = sqlalchemy.Column(sqlalchemy.Integer, default=0)
     created_date = sqlalchemy.Column(sqlalchemy.DateTime,
                                      default=datetime.datetime.now)
     modified_date = sqlalchemy.Column(sqlalchemy.DateTime,

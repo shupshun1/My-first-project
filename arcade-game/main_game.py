@@ -147,11 +147,12 @@ class Bossammo(arcade.Sprite):
 
 class Player(arcade.Sprite):
     """ Класс главного героя. """
-    def __init__(self):
+    def __init__(self, skin_id):
         """ Инициализация игрока, загрузка всех текстур и установка начальных параметров. """
         super().__init__()
 
         # Характеристики игрока
+        self.skin_id = skin_id
         self.hp = 3
         self.neyyazvimost = 0  # Таймер неуязвимости после получения урона
         self.otdacha_x = 0  # Переменные для эффекта отбрасывания (если планировалось)
@@ -175,12 +176,19 @@ class Player(arcade.Sprite):
         }
 
         # Автоматическая загрузка текстур из файлов по шаблону "действие направление_номер"
-        for action in self.animations:
-            for direction in self.animations[action]:
-                for i in range(1, 5):
-                    # Формируем имя файла
-                    file = f"{action} {direction}{i}.png"
-                    self.animations[action][direction].append(arcade.load_texture(file))
+        if self.skin_id == 0:
+            for action in self.animations:
+                for direction in self.animations[action]:
+                    for i in range(1, 5):
+                        # Формируем имя файла
+                        file = f"skin/{action} {direction}{i}.png"
+                        self.animations[action][direction].append(arcade.load_texture(file))
+        else:
+            for action in self.animations:
+                for direction in self.animations[action]:
+                    for i in range(1, 5):
+                        file = f"skin1/{action} {direction}{i}.png"
+                        self.animations[action][direction].append(arcade.load_texture(file))
 
         # Установка начальной текстуры (игрок стоит лицом вправо)
         self.texture = self.animations["idle"]["right"][0]
@@ -487,6 +495,9 @@ class GameView(arcade.View):
         self.particle_lict = arcade.SpriteList()  # (Примечание: в названии опечатка 'lict')
         self.ammo_list = arcade.SpriteList()
 
+        data = self.stats_api.get(self.username)
+        self.skin_id = data["active_skin"]
+
         # Статистика для БД
         self.enemies_killed = 0
         self.bats_killed = 0
@@ -532,7 +543,7 @@ class GameView(arcade.View):
         self.gui_camera.viewport_height = self.height
 
         # --- СОЗДАНИЕ ИГРОКА ---
-        self.player = Player()
+        self.player = Player(self.skin_id)
         self.speed_up_timer = 3
         self.can_run = None
         self.boss = None
@@ -702,7 +713,6 @@ class GameView(arcade.View):
         # --- ЛОГИКА ДВИЖЕНИЯ ИГРОКА ---
         self.dx = 0
         self.dy = 0
-
         if arcade.key.A in self.key_pressed:
             self.dx -= 1
         if arcade.key.D in self.key_pressed:
@@ -712,6 +722,9 @@ class GameView(arcade.View):
         if arcade.key.S in self.key_pressed:
             self.dy -= 1
 
+        base_speed = SPEED * 2 if self.skin_id == 1 else SPEED
+        self.current_speed = base_speed
+
         is_moving = self.dx != 0 or self.dy != 0
 
         # Эффект пыли при ходьбе
@@ -719,7 +732,6 @@ class GameView(arcade.View):
             self.spawn_particles(self.player.center_x, self.player.center_y - 20, arcade.color.GRAY, count=1)
 
         # Логика выносливости (бега на LSHIFT)
-        self.current_speed = SPEED
         if self.speed_up_timer >= 3:
             self.can_run = True
         if self.speed_up_timer <= 0:
@@ -728,7 +740,7 @@ class GameView(arcade.View):
 
         if arcade.key.LSHIFT in self.key_pressed and is_moving and self.can_run:
             self.speed_up_timer -= delta_time
-            self.current_speed = SPEED * 2
+            self.current_speed = base_speed * 2
         else:
             if not arcade.key.LSHIFT in self.key_pressed:
                 if self.speed_up_timer < 3:
@@ -972,9 +984,8 @@ class GameView(arcade.View):
                 self.player.last_direction = attack_slovar[key]
                 self.player.is_attacking = True
                 self.player.current_frame = 0
-
                 sword = Sword(
-                    "sword.png",
+                    "skin/sword.png",
                     TILE_SCALING,
                     self.player.center_x,
                     self.player.center_y,

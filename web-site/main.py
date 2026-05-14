@@ -58,7 +58,9 @@ def register():
             surname=form.surname.data,
             username=form.username.data,
             country=country,
-            photo=filename
+            photo=filename,
+            active_skin=0,
+            owned_skin=0,
         )
         user.hashed_password = generate_password_hash(password=form.password.data)
         db_sess.add(user)
@@ -156,7 +158,9 @@ def get_user_stats(username):
         'enemies_killed': user.enemies_killed,
         'total_wave': user.total_wave,
         'bats_killed': user.bats_killed,
-        'balance': user.balance
+        'balance': user.balance,
+        'active_skin': user.active_skin,
+        'owned_skin': user.owned_skin
     })
 
 @app.route("/api/game/register", methods=['POST'])
@@ -195,7 +199,9 @@ def api_register():
         enemies_killed=0,
         bats_killed=0,
         balance=0,
-        country=country
+        country=country,
+        active_skin=0,
+        owned_skin=0
     )
     db_sess.add(user)
     db_sess.commit()
@@ -281,7 +287,44 @@ def leaderboard():
 
 @app.route("/shop", methods=['GET', 'POST'])
 def shop():
-    pass
+    db_sess = db_session.create_session()
+    user = db_sess.get(User, session['user_id'])
+    if not user:
+        session.pop('user_id', None)
+        return redirect('/login')
+    owned = user.owned_skin
+    return render_template('shop.html', user=user, owned=owned)
+
+@app.route("/shop/buy", methods=['POST'])
+def shop_buy():
+    db_sess = db_session.create_session()
+    if 'user_id' not in session:
+        return redirect('/login')
+    user = db_sess.get(User, session['user_id'])
+    skin_id = request.form.get('skin_id', type=int)
+    if skin_id == 1:
+        if user.owned_skin == 0 and user.balance >= 1000:
+            user.balance -= 1000
+            user.owned_skin = 1
+            db_sess.commit()
+    return redirect('/shop')
+
+@app.route("/shop/select", methods=['POST'])
+def shop_select():
+    db_sess = db_session.create_session()
+    if 'user_id' not in session:
+        return redirect('/login')
+    user = db_sess.get(User, session['user_id'])
+    skin_id = request.form.get('skin_id', type=int)
+    if skin_id == 0:
+        user.active_skin = 0
+        db_sess.commit()
+    if skin_id == 1:
+        if user.owned_skin == 1:
+            user.active_skin = 1
+            db_sess.commit()
+    return redirect('/shop')
+
 
 
 if __name__ == '__main__':

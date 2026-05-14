@@ -4,3 +4,7 @@ database/*.db
 *.pyc
 
 .idea/
+
+venv/
+env/
+.env

@@ -14,7 +14,7 @@ sys.path.insert(
 from database import db_session, User # импорт папки БД
 
 app = Flask(__name__)
-app.config['SECRET_KEY'] = 'dev-key'
+app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY', 'default-dev-key-123')
 
 
 db_session.global_init("../database/game.db")

@@ -39,8 +39,7 @@ def register():
         try:
             geo = requests.get(f'http://ip-api.com/json/{user_ip}', timeout=3).json()
             country = geo.get('country', 'Неизвестно')
-            print(country)
-        except:
+        except Exception:
             country = 'Страна неизвестна'
         f = form.photo.data
         filename = secure_filename(f.filename)
@@ -171,7 +170,7 @@ def api_register():
         geo = requests.get(f'http://ip-api.com/json/{user_ip}', timeout=3).json()
         country = geo.get('country', 'Неизвестно')
         print(country)
-    except:
+    except Exception:
         country = 'Страна неизвестна'
     data = request.json
     if not data or "username" not in data or "password" not in data:
@@ -205,7 +204,6 @@ def api_register():
     )
     db_sess.add(user)
     db_sess.commit()
-    print("dadadasdsa")
     return jsonify({
         "status": "ok",
         "user_id": user.id,
@@ -226,7 +224,6 @@ def api_login():
         return jsonify({"error": "Wrong login or password"}), 401
     if not check_password_hash(user.hashed_password, password):
         return jsonify({"error": "Wrong login or password"}), 401
-    print("ewewew")
     return jsonify({
         "status": "ok",
         "user_id": user.id,
@@ -287,11 +284,10 @@ def leaderboard():
 
 @app.route("/shop", methods=['GET', 'POST'])
 def shop():
+    if 'user_id' not in session:
+        return redirect('/login')
     db_sess = db_session.create_session()
     user = db_sess.get(User, session['user_id'])
-    if not user:
-        session.pop('user_id', None)
-        return redirect('/login')
     owned = user.owned_skin
     return render_template('shop.html', user=user, owned=owned)
 
